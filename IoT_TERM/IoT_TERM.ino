@@ -47,7 +47,14 @@ void setup(){
 }
 
 void loop(){
-  long duration, inches, cm;
+
+  distance_cal();
+  Wifi_connect();
+
+}
+
+void distance_cal(){
+    long duration, inches, cm;
   
   // 거리 측정 pulse 생성
   //pinMode(pingPin, OUTPUT);
@@ -61,8 +68,7 @@ void loop(){
   //pinMode(pingPin, INPUT);
   duration = pulseIn(EchoPin, HIGH);
   inches = microsecondsToInches(duration);
- 
-  
+    
   if(inches < 5){ // 5인치 이내로 들어오면 경고음 발생
     tone(speakerPin, 2620, 100); // 경고음은 거리에 따라 다르게 주파수 설정
     Serial.println("5 이내");
@@ -80,9 +86,17 @@ void loop(){
     tone(speakerPin, 2620, 800); // 경고음은 거리에 따라 다르게 주파수 설정
     delay(1000);
   }
+}
 
 
-   WiFiEspClient client = server.available();
+long microsecondsToInches(long microseconds){
+  return microseconds / 74 / 2;
+} // 시간에 따라 거리 inch를 구하는 함수
+
+void Wifi_connect(){
+  
+    WiFiEspClient client = server.available();
+   
   if (client) {
     Serial.println("New client");
     // an http request ends with a blank line
@@ -133,13 +147,8 @@ void loop(){
     // close the connection:
     client.stop();
     Serial.println("Client disconnected");
-  }
+  }  
 }
-
-long microsecondsToInches(long microseconds){
-  return microseconds / 74 / 2;
-} // 시간에 따라 거리 inch를 구하는 함수
-
 
 void printWifiStatus()
 {
