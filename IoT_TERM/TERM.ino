@@ -5,7 +5,7 @@
  */
 
 #include "SoftwareSerial.h"
-
+// 음계
 #define DO  262
 #define RE  294
 #define ME  330
@@ -16,12 +16,12 @@
 
 SoftwareSerial BTSerial(2, 3);
 
-int piano[8] = {SI,RE*2,FA*2.1,RE*2,(RA+SI)/2,DO*2.1,ME*2,RA*1.05};
+int piano[8] = {SI,RE*2,FA*2.1,RE*2,(RA+SI)/2,DO*2.1,ME*2,RA*1.05}; // 비밀번호 틀렸을 시
 
 //For BT
 int passwordCount = 0;
-String receivedPassword = "";
-String Password = "1234";
+String receivedPassword = ""; // 집 비밀번호 입력시 받을 string
+String Password = "1234"; // 집 비밀번호 
 
 //거리 측정 센서
 const int pingPin = 4;
@@ -48,7 +48,7 @@ void setup(){
 }
 
 void loop(){
-
+// 시리얼 모니터의 입력에 따라 시작
     if (Serial.available() > 0)
     {
       BTSerial.write(Serial.read());
@@ -60,7 +60,7 @@ void loop(){
 
 void check_BTinput()
 {
-  BTSerial.listen();
+  BTSerial.listen(); // 집 비밀번호 입력하는 것 체크
   
   if(BTSerial.available() > 0)
   {
@@ -74,14 +74,14 @@ void check_BTinput()
     
     if(passwordCount == 4)
     {
-      if(receivedPassword == Password)
+      if(receivedPassword == Password) // 입력받은 4자리 비밀번호 일치
       {
         Serial.println("Family Come to Home");
         ring_tone_success();
       }
-      else
+      else // 입력받은 4자리 비밀번호 불일치
       {
-        Serial.println("Enemy Detected");
+        Serial.println("Enemy Detected"); // 도둑으로 간주
         ring_tone_fail();
       }
 
@@ -93,6 +93,7 @@ void check_BTinput()
   }
 }
 
+//가족 경쾌한 음악
 void ring_tone_success()
 {
   tone(speakerPin, DO * 1.5, 1000);
@@ -103,6 +104,7 @@ void ring_tone_success()
   delay(500);
 }
 
+//도둑 침입 경고음
 void ring_tone_fail()
 {
   for(int i=0;i<8;i++){
@@ -110,7 +112,7 @@ void ring_tone_fail()
       delay(500);
     }
 }
-
+// 창문으로 오는 도둑 체크
 void check_Thief(){
   long duration, inches, cm;
   
@@ -140,7 +142,7 @@ void check_Thief(){
     delay(100);
   }
 }
-
+//모터를 이용한 발걸기 함정
 void trap_one()
 {
   digitalWrite(motor3, LOW);
@@ -154,7 +156,7 @@ void trap_one()
 
   Serial.println("There is a thief at the Window");
 }
-
+//모터 이용한 벽돌, 압정 함정
 void trap_two()
 {
   digitalWrite(motor1, LOW);
