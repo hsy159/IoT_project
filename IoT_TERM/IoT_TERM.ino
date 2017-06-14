@@ -3,7 +3,8 @@
 // Emulate Serial1 on pins 6/7 if not present
 #ifndef HAVE_HWSERIAL1
 #include "SoftwareSerial.h"
-SoftwareSerial Serial1(8, 9); // RX, TX
+SoftwareSerial WifiSerial(8, 9); // RX, TX
+SoftwareSerial BTSerial(1, 2);
 #endif
 
 char ssid[] = "hotspot24";            // your network SSID (name)
@@ -14,47 +15,51 @@ int reqCount = 0;                // number of requests received
 
 WiFiEspServer server(80);
 
+//거리 측정 센서
 const int pingPin = 7;
 const int EchoPin = 6;
+//부저
 int speakerPin = 8;
+//LED 1개
+int led1 = 13;
+// motor 1개
+int motor1 = 3;
+int motor2 = 4;
 
 void setup(){
-  pinMode(pingPin, OUTPUT);
-  pinMode(EchoPin, INPUT);
-  Serial.begin(115200);
-  Serial1.begin(9600);
-  WiFi.init(&Serial1);
-  // check for the presence of the shield
-  if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
-    // don't continue
-    while (true);
-  }
-
-  // attempt to connect to WiFi network
-  while ( status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to WPA SSID: ");
-    Serial.println(ssid);
-    // Connect to WPA/WPA2 network
-    status = WiFi.begin(ssid, pass);
-  }
-
-  Serial.println("You're connected to the network");
-  printWifiStatus();
-  
-  // start the web server on port 80
-  server.begin();
+  Serial.begin(9600);
 }
-
 void loop(){
 
-  distance_cal();
-  Wifi_connect();
+  if(Serial.available()){
+    char received = Serial.read();
+    if(received == "1"){
+      distance_use();
+    }
+    else if(received == "2"){
+      wifi_setup();
+      Wifi_connect();
 
+    }    
+    else if(received == "3"){
+      BT_setup();
+      BT_loop();
+    }    
+    else if(received == "4"){
+      Motor_setup();
+      Motor_loop();
+    }   
+    else {
+      LED_setup();
+      LED_loop();
+    }
+
+  }
+  
 }
 
-void distance_cal(){
-    long duration, inches, cm;
+void distance_use(){
+  long duration, inches, cm;
   
   // 거리 측정 pulse 생성
   //pinMode(pingPin, OUTPUT);
@@ -88,10 +93,37 @@ void distance_cal(){
   }
 }
 
-
 long microsecondsToInches(long microseconds){
   return microseconds / 74 / 2;
 } // 시간에 따라 거리 inch를 구하는 함수
+
+void Wifi_setup(){
+  pinMode(pingPin, OUTPUT);
+  pinMode(EchoPin, INPUT);
+  Serial.begin(115200);
+  WifiSerial.begin(9600);
+  WiFi.init(&WifiSerial);
+  // check for the presence of the shield
+  if (WiFi.status() == WL_NO_SHIELD) {
+    Serial.println("WiFi shield not present");
+    // don't continue
+    while (true);
+  }
+
+  // attempt to connect to WiFi network
+  while ( status != WL_CONNECTED) {
+    Serial.print("Attempting to connect to WPA SSID: ");
+    Serial.println(ssid);
+    // Connect to WPA/WPA2 network
+    status = WiFi.begin(ssid, pass);
+  }
+
+  Serial.println("You're connected to the network");
+  printWifiStatus();
+  
+  // start the web server on port 80
+  server.begin();
+}
 
 void Wifi_connect(){
   
@@ -166,4 +198,42 @@ void printWifiStatus()
   Serial.print("To see this page in action, open a browser to http://");
   Serial.println(ip);
   Serial.println();
+}
+
+//블루투스 읽어오기용
+void BT_setup(){
+  Serial.begin(9600);
+  BTSerial.begin(9600);
+}
+void BT_loop(){
+  if(Serial.available() > 0){
+    BTSerial.write(Serial.read());
+  }
+  if(Serial.available() > 0){
+    Serial.write(BTSerial.read());
+  }
+}
+
+// 모터 1개 돌리기
+void Motor_setup(){
+  pinMode(motor1, OUTPUT);
+  pinMode(motor2, OUTPUT);
+}
+void Motor_loop(){
+    digitalWrite(motor1, HIGH);
+    digitalWrite(motor2, LOW);
+    delay(1000);
+
+    digitalWrite(motor1, LOW);
+    digitalWrite(motor2, HIGH);
+}
+
+void LED_setup(){
+  pinMode(led1, OUTPUT);
+}
+void LED_loop(){
+  if(led1 == LOW){
+    digitalWrite(led1, HIGH);
+  }
+  else digitalWrite(led1, LOW);
 }
