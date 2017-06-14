@@ -153,7 +153,7 @@
 //  Serial.println();
 //}
 
-
+/*
 #include "WiFiEsp.h"
 
 // Emulate Serial1 on pins 6/7 if not present
@@ -439,4 +439,4 @@ void LED_loop(){
     digitalWrite(led1, HIGH);
   }
   else digitalWrite(led1, LOW);
-}
+}*/
